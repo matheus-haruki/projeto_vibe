@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>VIBE | Optimized Social</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Fontes -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  
+  <!-- Ícones -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            dark: '#09090b',
+            card: '#18181b',
+            accent: '#ccff00',
+            accentHover: '#b3e600',
+          },
+          fontFamily: {
+            display: ['Space Grotesk', 'sans-serif'],
+            body: ['Inter', 'sans-serif'],
+          },
+          animation: {
+            'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'fade-in': 'fadeIn 0.5s ease-out forwards',
+          },
+          keyframes: {
+            fadeIn: {
+              '0%': { opacity: '0', transform: 'translateY(10px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="antialiased pb-20 lg:pb-0">
+
+  <!-- HEADER -->
+  <header class="fixed top-0 w-full h-16 lg:h-20 z-40 glass flex items-center justify-between px-4 md:px-10 transition-all duration-300">
+    <div class="flex items-center gap-2 text-xl lg:text-2xl font-bold font-display tracking-tighter cursor-pointer select-none" onclick="App.setFilter('all')">
+      <i class="ph-fill ph-alien text-accent"></i>
+      <span class="hidden sm:inline">VIBE<span class="text-accent">.</span></span>
+    </div>
+    
+    <!-- Busca -->
+    <div class="flex-1 max-w-md mx-4 relative group">
+      <input type="text" id="global-search" oninput="App.handleSearch(this.value)" placeholder="Pesquisar..." class="w-full bg-black/20 border border-white/10 rounded-full py-2 px-10 text-sm focus:outline-none focus:border-accent focus:bg-black/40 transition text-white placeholder-gray-500">
+      <i class="ph ph-magnifying-glass absolute left-3.5 top-2.5 text-gray-400 group-focus-within:text-accent transition"></i>
+      <i id="search-spinner" class="ph ph-spinner animate-spin absolute right-3.5 top-2.5 text-accent hidden"></i>
+    </div>
+
+    <!-- Área do Usuário -->
+    <div id="user-area" class="flex items-center gap-4"></div>
+  </header>
+
+  <!-- LAYOUT -->
+  <div class="pt-20 lg:pt-24 px-4 md:px-8 max-w-[1800px] mx-auto flex gap-8 min-h-screen">
+    
+    <!-- SIDEBAR -->
+    <aside class="hidden lg:block w-64 fixed h-full overflow-y-auto pb-32">
+      <div class="space-y-8">
+        <div>
+          <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4 px-2">Feed</h3>
+          <nav class="space-y-1">
+            <button onclick="App.setFilter('all')" id="nav-all" class="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition text-gray-300 hover:bg-white/5 hover:text-white tab-active">
+                <i class="ph-fill ph-house text-lg"></i> Para Você
+            </button>
+            <button onclick="App.setFilter('trending')" id="nav-trending" class="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition text-gray-300 hover:bg-white/5 hover:text-white">
+                <i class="ph-fill ph-fire text-lg"></i> Em Alta
+            </button>
+            <button onclick="App.setFilter('following')" id="nav-following" class="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition text-gray-300 hover:bg-white/5 hover:text-white">
+                <i class="ph-fill ph-users text-lg"></i> Seguindo
+            </button>
+          </nav>
+        </div>
+
+        <div>
+            <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4 px-2">Vibes</h3>
+            <div class="flex flex-wrap gap-2 px-2">
+                <span onclick="App.handleSearch('Cyberpunk')" class="px-3 py-1 bg-card border border-white/5 rounded-full text-xs hover:border-accent cursor-pointer transition">Cyberpunk</span>
+                <span onclick="App.handleSearch('Minimal')" class="px-3 py-1 bg-card border border-white/5 rounded-full text-xs hover:border-accent cursor-pointer transition">Minimal</span>
+                <span onclick="App.handleSearch('Gaming')" class="px-3 py-1 bg-card border border-white/5 rounded-full text-xs hover:border-accent cursor-pointer transition">Gaming</span>
+                <span onclick="App.handleSearch('Nature')" class="px-3 py-1 bg-card border border-white/5 rounded-full text-xs hover:border-accent cursor-pointer transition">Nature</span>
+            </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN FEED -->
+    <main class="flex-1 lg:ml-72 pb-10 w-full">
+      <div class="flex justify-between items-end mb-6 px-1">
+        <h2 id="page-title" class="text-2xl md:text-3xl font-display font-bold text-white">Para Você</h2>
+      </div>
+
+      <!-- Resultados de Usuários -->
+      <div id="user-results" class="hidden mb-8 flex-col gap-4">
+          <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Contas Encontradas</h3>
+          <div id="user-results-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+      </div>
+
+      <!-- Estado Vazio -->
+      <div id="empty-state" class="hidden flex-col items-center justify-center py-20 text-gray-500">
+        <i class="ph ph-planet text-6xl mb-4 opacity-20"></i>
+        <p class="text-lg font-medium">Nada por aqui.</p>
+        <p class="text-sm opacity-70" id="empty-state-msg">Explore ou faça o primeiro post.</p>
+      </div>
+
+      <!-- Grid de Imagens -->
+      <div id="gallery-grid" class="masonry-grid"></div>
+
+      <!-- Loader -->
+      <div id="infinite-loader" class="w-full py-8 flex justify-center opacity-0 transition-opacity">
+         <div class="flex items-center gap-2 text-accent">
+             <i class="ph ph-spinner ph-spin text-2xl"></i>
+             <span class="text-sm font-bold">Carregando...</span>
+         </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- MOBILE NAV -->
+  <nav class="lg:hidden mobile-nav glass">
+      <button onclick="App.setFilter('all')" class="text-gray-400 hover:text-white"><i class="ph-fill ph-house text-2xl"></i></button>
+      <button onclick="App.setFilter('trending')" class="text-gray-400 hover:text-white"><i class="ph-fill ph-fire text-2xl"></i></button>
+      <button onclick="UI.openModal('upload-modal')" class="text-accent -mt-5"><div class="bg-accent text-black rounded-full p-3 shadow-lg"><i class="ph-bold ph-plus text-2xl"></i></div></button>
+      <button onclick="App.setFilter('following')" class="text-gray-400 hover:text-white"><i class="ph-fill ph-users text-2xl"></i></button>
+      <button onclick="App.openProfile()" class="text-gray-400 hover:text-white"><i class="ph-fill ph-user text-2xl"></i></button>
+  </nav>
+
+  <!-- ================= MODAIS ================= -->
+  
+  <!-- Auth Modal -->
+  <div id="auth-modal" class="fixed inset-0 z-[60] bg-black/90 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-card border border-white/10 rounded-3xl p-8 w-full max-w-md relative shadow-2xl">
+      <button onclick="UI.closeModal('auth-modal')" class="absolute top-5 right-5 text-gray-400 hover:text-white"><i class="ph ph-x text-xl"></i></button>
+      <div class="text-center mb-8">
+          <h2 id="auth-title" class="text-2xl font-display font-bold text-white">Entrar</h2>
+          <p class="text-gray-500 text-sm mt-1">Junte-se à comunidade.</p>
+      </div>
+      <form id="auth-form" class="space-y-4">
+        <input type="text" id="auth-name" placeholder="Nome de Usuário" class="hidden w-full bg-black/30 border border-gray-700 p-4 rounded-xl text-white focus:border-accent outline-none transition">
+        <input type="email" id="auth-email" placeholder="E-mail" required class="w-full bg-black/30 border border-gray-700 p-4 rounded-xl text-white focus:border-accent outline-none transition">
+        <input type="password" id="auth-pass" placeholder="Senha" required class="w-full bg-black/30 border border-gray-700 p-4 rounded-xl text-white focus:border-accent outline-none transition">
+        <button type="submit" class="w-full bg-accent hover:bg-accentHover text-black font-bold py-4 rounded-xl transition active:scale-95">Continuar</button>
+      </form>
+      <p onclick="App.toggleAuthMode()" id="auth-switch" class="text-center text-gray-500 text-sm mt-6 cursor-pointer hover:text-accent transition">Não tem conta? <span class="underline">Cadastre-se</span>.</p>
+    </div>
+  </div>
+
+  <!-- Upload Modal -->
+  <div id="upload-modal" class="fixed inset-0 z-[60] bg-black/90 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-card border border-white/10 rounded-3xl p-6 w-full max-w-lg relative shadow-2xl">
+      <div class="flex justify-between items-center mb-6">
+          <h2 class="text-xl font-display font-bold">Novo Post</h2>
+          <button onclick="UI.closeModal('upload-modal')" class="text-gray-400 hover:text-white"><i class="ph ph-x text-xl"></i></button>
+      </div>
+      <div class="space-y-4">
+        <label class="block w-full h-64 border-2 border-dashed border-gray-700 hover:border-accent hover:bg-white/5 rounded-2xl flex flex-col items-center justify-center cursor-pointer transition group relative bg-black/20 overflow-hidden">
+          <div id="upload-placeholder" class="text-center p-4">
+            <i class="ph ph-image text-3xl text-gray-500 group-hover:text-accent mb-2 transition"></i>
+            <p class="text-sm text-gray-300">Clique para carregar</p>
+          </div>
+          <img id="preview-img" class="absolute inset-0 w-full h-full object-contain hidden bg-black">
+          <input type="file" id="file-input" accept="image/*">
+        </label>
+        <input type="text" id="post-caption" placeholder="Legenda..." class="w-full bg-black/30 border border-gray-700 p-3 rounded-xl text-white focus:border-accent outline-none">
+        <button onclick="App.createPost()" id="btn-publish" class="w-full bg-white text-black font-bold py-3 rounded-xl hover:bg-gray-200 transition">Publicar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- View Post Modal -->
+  <div id="view-modal" class="fixed inset-0 z-[70] bg-black/95 hidden items-center justify-center p-2 md:p-4">
+    <button onclick="UI.closeModal('view-modal')" class="absolute top-4 right-4 text-white/50 hover:text-white text-3xl z-50 transition"><i class="ph ph-x"></i></button>
+    <div class="flex flex-col md:flex-row bg-card rounded-2xl overflow-hidden max-w-6xl w-full h-[90vh] md:h-[85vh] border border-white/10 shadow-2xl">
+      <div class="flex-1 bg-black flex items-center justify-center relative h-1/2 md:h-auto">
+        <img id="view-img" class="max-h-full max-w-full object-contain">
+      </div>
+      <div class="w-full md:w-[400px] bg-card border-t md:border-l border-white/10 flex flex-col h-1/2 md:h-auto">
+        <div class="p-4 border-b border-white/10 flex items-center justify-between flex-shrink-0">
+            <div class="flex items-center gap-3 cursor-pointer hover:opacity-80" onclick="App.openProfile(document.getElementById('view-user').innerText)">
+                <div class="w-8 h-8 bg-gradient-to-br from-gray-700 to-gray-900 rounded-full flex items-center justify-center border border-white/10 overflow-hidden">
+                    <img id="view-avatar" class="w-full h-full object-cover hidden">
+                    <i id="view-avatar-icon" class="ph-fill ph-user text-gray-400"></i>
+                </div>
+                <div><p id="view-user" class="font-bold text-sm text-white">User</p></div>
+            </div>
+            <button id="follow-btn" class="text-xs font-bold px-3 py-1.5 rounded-full border border-white/20 hover:bg-white hover:text-black transition">Seguir</button>
+        </div>
+        <div class="flex-1 overflow-y-auto p-4 space-y-4" id="view-scroll-area">
+            <p id="view-caption" class="text-sm text-gray-300 pb-2 border-b border-white/5"></p>
+            <div id="comments-list" class="space-y-3"></div>
+        </div>
+        <div class="p-4 bg-black/20 border-t border-white/10 flex-shrink-0">
+            <div class="flex justify-between items-center mb-3">
+                <button id="view-like-btn" class="flex items-center gap-2 text-white hover:text-accent transition group">
+                    <i id="view-like-icon" class="ph-bold ph-heart text-2xl group-hover:scale-110 transition"></i>
+                </button>
+                <p id="view-likes-count" class="text-xs font-bold text-gray-400">0 curtidas</p>
+            </div>
+            <form id="comment-form" class="relative">
+                <input type="text" id="comment-input" placeholder="Comentar..." class="w-full bg-black/30 border border-white/10 rounded-full py-2.5 px-4 pr-12 text-sm text-white focus:border-accent outline-none">
+                <button type="submit" class="absolute right-2 top-2 text-accent p-1 font-bold text-xs">ENVIAR</button>
+            </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile Modal -->
+  <div id="profile-modal" class="fixed inset-0 z-[60] bg-black/95 hidden items-center justify-center p-4">
+      <div class="bg-card border border-white/10 rounded-3xl w-full max-w-4xl h-[85vh] flex flex-col shadow-2xl relative">
+          <button onclick="UI.closeModal('profile-modal')" class="absolute top-6 right-6 text-white hover:text-accent z-10"><i class="ph ph-x text-2xl"></i></button>
+          
+          <div class="p-8 border-b border-white/10 flex flex-col md:flex-row items-center gap-6">
+              <div class="relative group">
+                  <div class="w-24 h-24 rounded-full bg-gradient-to-tr from-accent to-green-600 p-1 cursor-pointer" onclick="if(document.getElementById('profile-edit-overlay').classList.contains('flex')) document.getElementById('avatar-input').click()">
+                      <div class="w-full h-full rounded-full bg-card flex items-center justify-center overflow-hidden relative">
+                        <img id="profile-avatar-img" class="w-full h-full object-cover hidden">
+                        <span id="profile-initial" class="text-3xl font-display font-bold text-white">U</span>
+                        
+                        <!-- Overlay de Edição -->
+                        <div id="profile-edit-overlay" class="absolute inset-0 bg-black/60 hidden items-center justify-center">
+                            <i class="ph-bold ph-camera text-white text-2xl"></i>
+                        </div>
+                      </div>
+                  </div>
+                  <input type="file" id="avatar-input" accept="image/*" onchange="App.updateAvatar(this)">
+              </div>
+              
+              <div class="text-center md:text-left">
+                  <div class="flex items-center justify-center md:justify-start gap-4">
+                      <h2 id="profile-name" class="text-2xl md:text-3xl font-display font-bold text-white">Nome</h2>
+                      <button id="profile-follow-btn" class="hidden px-4 py-1.5 rounded-full border border-white/20 text-xs font-bold hover:bg-white hover:text-black transition">Seguir</button>
+                  </div>
+                  <p id="profile-stats" class="text-gray-400 mt-1 text-sm">0 posts • 0 curtidas</p>
+              </div>
+          </div>
+          <div class="flex justify-center border-b border-white/10">
+              <button onclick="App.switchProfileTab('posts')" id="tab-posts" class="flex-1 md:flex-none px-8 py-4 text-sm font-bold text-white border-b-2 border-accent">POSTS</button>
+              <button onclick="App.switchProfileTab('likes')" id="tab-likes" class="flex-1 md:flex-none px-8 py-4 text-sm font-bold text-gray-500">CURTIDAS</button>
+          </div>
+          <div class="flex-1 overflow-y-auto p-4 md:p-6 bg-black/20">
+              <div id="profile-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4"></div>
+          </div>
+      </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed top-20 right-5 bg-card border border-white/10 px-6 py-4 rounded-xl shadow-2xl translate-x-[150%] transition-transform duration-300 flex items-center gap-3 z-[100]">
+    <i id="toast-icon" class="ph-fill ph-check-circle text-accent text-xl"></i>
+    <div>
+        <p id="toast-title" class="text-sm font-bold text-white">Sucesso</p>
+        <p id="toast-msg" class="text-xs text-gray-400">Ação realizada.</p>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,74 @@
+/* === GLOBAL OPTIMIZATIONS === */
+body {
+  background-color: #09090b;
+  color: #f4f4f5;
+  font-family: 'Inter', sans-serif;
+  background-image: radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 32px 32px;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Scrollbar Otimizada */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #09090b; }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #ccff00; }
+
+/* Vidro com performance melhorada */
+.glass {
+  background: rgba(24, 24, 27, 0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.masonry-grid { column-count: 1; column-gap: 1.5rem; }
+@media (min-width: 640px) { .masonry-grid { column-count: 2; } }
+@media (min-width: 1024px) { .masonry-grid { column-count: 3; } }
+@media (min-width: 1280px) { .masonry-grid { column-count: 4; } }
+
+.pin {
+  break-inside: avoid;
+  margin-bottom: 1.5rem;
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+  background: #18181b;
+  content-visibility: auto; 
+  contain-intrinsic-size: 300px;
+  border: 1px solid rgba(255,255,255,0.05);
+  transform: translateZ(0);
+}
+
+@media (hover: hover) {
+    .pin:hover { 
+        transform: translateY(-4px); 
+        z-index: 10; 
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        border-color: rgba(204, 255, 0, 0.3);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+}
+
+.pin-overlay {
+  background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.pin:hover .pin-overlay { opacity: 1; }
+
+.mobile-nav {
+    position: fixed; bottom: 0; left: 0; width: 100%;
+    background: #09090b; border-top: 1px solid rgba(255,255,255,0.1);
+    display: flex; justify-content: space-around; padding: 12px 0;
+    z-index: 50; padding-bottom: env(safe-area-inset-bottom);
+}
+
+input[type="file"] { display: none; }
+
+.tab-active {
+    background-color: rgba(204, 255, 0, 0.1);
+    color: #ccff00;
+    border-color: #ccff00;
+}
